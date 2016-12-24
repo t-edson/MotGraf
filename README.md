@@ -1,7 +1,7 @@
 MotGraf 0.0
 ===========
 
-Librería en Lazarus, para el dibuja de objetos en 2 y 3 dimensiones.
+Librería en Lazarus, para el dibujo de objetos en 2 y 3 dimensiones.
 
 MotGraf es una librería que encapsula las funciones de dibujo, para transformarlas a un espacio de trabajo 2D o 3D.
 

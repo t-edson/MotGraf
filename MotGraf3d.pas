@@ -16,13 +16,22 @@ type
 
   { TMotGraf }
   TMotGraf = class
-    //Parámetros de la cámara (perspectiva)
+  private
+    FAlfa: Single;
+    FFi: Single;
+    sena, cosa: Single;   //sen(Alfa) y cos(Alfa)
+    seni, cosi: Single;   //sen(Fi) y cos(Fi)
+    gControl: TGraphicControl;   //Control gráfico, en donde se va a dibujar
+    cv      : Tcanvas;           //referencia al lienzo
+    procedure SetAlfa(AValue: Single);
+    function GetPenColor: TColor;
+    procedure SetFi(AValue: Single);
+    procedure SetPenColor(AValue: TColor);
+  public  //Parámetros de la cámara (perspectiva)
     x_cam   : Single;  //coordenadas de la camara
     y_cam   : Single;
 
     Zoom    : Single;     //factor de ampliación
-    mAlfa   : Single;     //ángulo "alfa"
-    mFi     : Single;     //ánfulo "fi"
     {Desplazamiento para ubicar el centro virtual de la pantalla (0,0)
     Se indica en pixeles. Si por ejemplo, se fija:
     x_Des = 10 y y_Des = 10
@@ -30,20 +39,18 @@ type
     10 pixeles a la derecha del borde izquierdo y 10 pixeles arriba del borde inferior}
     x_des      : integer;
     y_des      : Integer;
-  private
-    gControl: TGraphicControl;   //Control gráfico, en donde se va a dibujar
-    cv      : Tcanvas;           //referencia al lienzo
-    function GetPenColor: TColor;
-    procedure SetPenColor(AValue: TColor);
+    OnChangeView: procedure of object;  //Si se produce cambio de la perspectiva
+    property Alfa: Single read FAlfa write SetAlfa;  //Ángulo ALFA
+    Property Fi: Single read FFi write SetFi;        //Ángulo FI
   public    //Funciones de transformación
     function XPant(xv, yv, zv: Single): Integer; inline;
     function YPant(xv, yv, zv: Single): Integer; inline;
     procedure XYpant(xv, yv, zv: Single; var xp, yp: Integer);
-    function Xvirt(xr, yr: Integer): Single; inline;
-    function Yvirt(xr, yr: Integer): Single; inline;
+    function Xvirt(xp, yp: Integer): Single; inline;
+    function Yvirt(xp, yp: Integer): Single; inline;
     procedure XYvirt(xp, yp: Integer; zv: Integer; var xv, yv: Single);
     procedure Desplazar(dx, dy: Integer);
-    procedure ObtenerDesplaz2(xr, yr: Integer; Xant, Yant: Integer; var dx,dy: Single);
+    procedure ObtenerDesplaz2(xp, yp: Integer; Xant, Yant: Integer; var dx,dy: Single);
   public  //Configuración
     property PenColor: TColor read GetPenColor write SetPenColor;
     procedure FijaLapiz(estilo:TFPPenStyle; ancho:Integer; color:Tcolor);
@@ -90,31 +97,79 @@ begin
   gControl.Canvas.Brush.Color := clBlack;
   gControl.Canvas.FillRect(0,0,gControl.Width,gControl.Height);
 end;
-//*****************************FUNCIONES DE TRANSFORMACIÓN********************************
+//Funciones de transformación
 //Las siguientes funciones son por así decirlo, "estandar".
 //Cuando se creen otras clases de dispositivo interfase gráfica deberían tener también estas
 //funciones que son siempre necesarias.
-function TMotGraf.Xvirt(xr, yr: Integer): Single;
+procedure TMotGraf.SetAlfa(AValue: Single);
+begin
+  if FAlfa=AValue then Exit;
+  FAlfa:=AValue;
+  //Realiza el cálculo una sola vez, por velocidad
+  sena := sin(Alfa);
+  cosa := cos(Alfa);
+  if OnChangeView<>nil then OnChangeView;
+end;
+procedure TMotGraf.SetFi(AValue: Single);
+begin
+  if FFi=AValue then Exit;
+  FFi:=AValue;
+  //Realiza el cálculo una sola vez, por velocidad
+  seni := sin(Fi);
+  cosi := cos(Fi);
+  if OnChangeView<>nil then OnChangeView;
+end;
+function TMotGraf.XPant(xv, yv, zv: Single): Integer;   //INLINE Para acelerar las llamadas
+//Función de la geometría del motor. Da la transformación lineal de la coordenada x.
+//Obtiene el punto X en la pantalla donde realmente aparece un punto X,Y,Z
+var
+  x2c: ValReal;
+begin
+//  Result := Round(
+//              (xv) * zoom + x_des
+//            );
+  x2c := (xv - x_cam) * cosa - (yv - y_cam) * sena;
+  Result:= Round(x_des + x2c * Zoom);
+end;
+function TMotGraf.YPant(xv, yv, zv: Single): Integer;  //INLINE Para acelerar las llamadas
+//Función de la geometría del motor. Da la transformación lineal de la coordenada y.
+//Obtiene el punto Y en la pantalla donde realmente aparece un punto X,Y,Z
+var
+  y2c: ValReal;
+begin
+//  Result := Round(gControl.Height-(
+//              (yv) * zoom + y_des
+//            ));
+  y2c := ((yv - y_cam) * cosa + (xv - x_cam) * sena) * cosi + zv * seni;
+//  Ypant := Round(y_des + y2c * Zoom);  //Con el eje creciendo hacia abajo
+  Ypant := Round(gControl.Height - (y_des + y2c * Zoom));
+end;
+procedure TMotGraf.XYpant(xv, yv, zv: Single; var xp, yp: Integer);
+begin
+  xp := XPant(xv, yv, zv);
+  yp := YPant(xv, yv, zv);
+end;
+function TMotGraf.Xvirt(xp, yp: Integer): Single;
 //Obtiene la coordenada X virtual (del punto X,Y,Z ) a partir de unas coordenadas de
 //pantalla.
 var
   x2c, y2c: Single;
 begin
-  x2c := (xr - x_des) / Zoom;
-  y2c := (yr - y_des) / Zoom;
+  x2c := (xp - x_des) / Zoom;
+  y2c := (gControl.Height - yp - y_des) / Zoom;
   //caso z= 0, con inclinación. Equivalente a seleccionar en el plano XY
-  Xvirt := (x2c * Cos(mAlfa) * Cos(mFi) + Sin(mAlfa) * y2c) / Cos(mFi) + x_cam;
+  Xvirt := (x2c * cosa * cosi + sena * y2c) / cosi + x_cam;
 end;
-function TMotGraf.Yvirt(xr, yr: Integer): Single;
+function TMotGraf.Yvirt(xp, yp: Integer): Single;
 //Obtiene la coordenada Y virtual (del punto X,Y,Z ) a partir de unas coordenadas de
 //pantalla.
 var
   x2c, y2c: Single;
 begin
-  x2c := (xr - x_des) / Zoom;
-  y2c := (yr - y_des) / Zoom;
+  x2c := (xp - x_des) / Zoom;
+  y2c := (gControl.Height - yp - y_des) / Zoom;
   //caso z= 0, con inclinación. Equivalente a seleccionar en el plano XY
-  Yvirt := (Cos(mAlfa) * y2c - x2c * Sin(mAlfa) * Cos(mFi)) / Cos(mFi) + y_cam;
+  Yvirt := (cosa * y2c - x2c * sena * cosi) / cosi + y_cam;
 end;
 procedure TMotGraf.XYvirt(xp, yp: Integer; zv: Integer; var xv, yv: Single);
 //Devuelve las coordenadas virtuales xv,yv a partir de unas coordenadas de pantalla
@@ -124,41 +179,51 @@ var
   x2c, y2c : Single;
 begin
   x2c := (xp - x_des) / Zoom;
-  y2c := (yp - y_des) / Zoom;
+  y2c := (gControl.Height - yp - y_des) / Zoom;
   //Para ser legales, debería haber protección para cos(fi) = 0
   if zv = 0 then begin  //fórmula simplificada
-      xv := (x2c * Cos(mAlfa) * Cos(mFi) + Sin(mAlfa) * y2c) / Cos(mFi) + x_cam;
-      yv := (Cos(mAlfa) * y2c - x2c * Sin(mAlfa) * Cos(mFi)) / Cos(mFi) + y_cam;
+      xv := (x2c * cosa * cosi + sena * y2c) / cosi + x_cam;
+      yv := (cosa * y2c - x2c * sena * cosi) / cosi + y_cam;
   end else begin //para cualquier plano paralelo a XY
-      xv := (x2c * Cos(mAlfa) * Cos(mFi) + Sin(mAlfa) * (y2c - zv * Sin(mFi))) / Cos(mFi) + x_cam;
-      yv := (Cos(mAlfa) * (y2c - zv * Sin(mFi)) - x2c * Sin(mAlfa) * Cos(mFi)) / Cos(mFi) + y_cam;
+      xv := (x2c * cosa * cosi + sena * (y2c - zv * seni)) / cosi + x_cam;
+      yv := (cosa * (y2c - zv * seni) - x2c * sena * cosi) / cosi + y_cam;
   end;
   //Si los ángulos de vista alfa y fi son cero (caso normal), bastaría con
   //xv = x2c + x_cam
   //yv = y2c + y_cam
 end;
-
 procedure TMotGraf.Desplazar(dx, dy: Integer);
 //Desplaza el escenario (el punto de rotación siempre está en el centro de la pantalla)
 begin
    //desplazamineto en y
-   y_cam := y_cam - dy * Cos(mAlfa);
-   x_cam := x_cam - dy * Sin(mAlfa);
+   y_cam := y_cam - dy * cosa;
+   x_cam := x_cam - dy * sena;
    //desplazamiento en x
-   x_cam := x_cam - dx * Cos(mAlfa);
-   y_cam := y_cam + dx * Sin(mAlfa);
+   x_cam := x_cam - dx * cosa;
+   y_cam := y_cam + dx * sena;
 end;
-
-procedure TMotGraf.ObtenerDesplaz2(xr, yr: Integer; Xant, Yant: Integer;
+procedure TMotGraf.ObtenerDesplaz2(xp, yp: Integer; Xant, Yant: Integer;
   var dx, dy: Single);
 //Obtiene los desplazamientos dx, dy para los objetos gráficos en base a
 //los movimientos del ratón. Sólo desplaza en 2D
+var
+  dx0, dy0: Single;
 begin
      //desplazamiento en plano XY en caso alfa=0, fi=0
-   dx := (xr - xAnt) / Zoom;
-   dy := (yr - yAnt) / Zoom;
+   dx0 := (xp - xAnt) / Zoom;
+   dy0 := -(yp - yAnt) / Zoom;
+   dx := (dx0 * cosa * cosi + sena * dy0) / cosi;
+   dy := (cosa * dy0 - dx0 * sena * cosi) / cosi;
 end;
-
+//Configuración
+procedure TMotGraf.SetPenColor(AValue: TColor);
+begin
+  cv.Pen.Color:=AValue;
+end;
+function TMotGraf.GetPenColor: TColor;
+begin
+  Result := cv.Pen.Color;
+end;
 procedure TMotGraf.FijaLapiz(estilo: TFPPenStyle; ancho: Integer; color: Tcolor);
 //Establece el lápiz actual de dibujo
 begin
@@ -182,47 +247,6 @@ begin
 
     cv.Brush.Style:=bsSolid;
     cv.Brush.Color:=colRel;
-end;
-
-function TMotGraf.XPant(xv, yv, zv: Single): Integer;   //INLINE Para acelerar las llamadas
-//Función de la geometría del motor. Da la transformación lineal de la coordenada x.
-//Obtiene el punto X en la pantalla donde realmente aparece un punto X,Y,Z
-var
-  x2c: ValReal;
-begin
-//   XPant := Round((xv - x_cam) * Zoom + x_des);
-//  Result := Round(
-//              (xv) * zoom + x_des
-//            );
-  x2c := (xv - x_cam) * Cos(mAlfa) - (yv - y_cam) * Sin(mAlfa);
-  Xpant := Round(x_des + x2c * Zoom);
-end;
-function TMotGraf.YPant(xv, yv, zv: Single): Integer;  //INLINE Para acelerar las llamadas
-//Función de la geometría del motor. Da la transformación lineal de la coordenada y.
-//Obtiene el punto Y en la pantalla donde realmente aparece un punto X,Y,Z
-var
-  y2c: ValReal;
-begin
-//   YPant := Round((yv - y_cam) * Zoom + y_des);
-//  Result := Round(gControl.Height-(
-//              (yv) * zoom + y_des
-//            ));
-  y2c := ((yv - y_cam) * Cos(mAlfa) + (xv - x_cam) * Sin(mAlfa)) * Cos(mFi) + zv * Sin(mFi);
-  Ypant := Round(y_des + y2c * Zoom);
-end;
-procedure TMotGraf.XYpant(xv, yv, zv: Single; var xp, yp: Integer);
-begin
-  xp := XPant(xv, yv, zv);
-  yp := YPant(xv, yv, zv);
-end;
-
-procedure TMotGraf.SetPenColor(AValue: TColor);
-begin
-  cv.Pen.Color:=AValue;
-end;
-function TMotGraf.GetPenColor: TColor;
-begin
-  Result := cv.Pen.Color;
 end;
 //Funciones de dibujo
 procedure TMotGraf.Line(const x1, y1, z1, x2, y2, z2: Double);

@@ -1,0 +1,7 @@
+MotGraf
+=======
+Se cambia el sistema de coordenadas del eje Y, para que siga al sentido hacia arriba
+como lo es en geometría normal.
+Se acelera el cálculo del seno y coseno de los ángulos ALFA y FI, usando las variables
+sena, cosa, seni, y cosi.
+Se agrega el evento OnChangeView
