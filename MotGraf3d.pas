@@ -59,8 +59,8 @@ type
   public //Funciones de dibujo
     procedure Clear;
     procedure Line(const x1, y1, z1, x2, y2, z2: Double);
-    procedure rectangXY3(x1, y1: Single; x2, y2: Single; z: Single);
-    procedure rectangXY3r(x1, y1: Single; x2, y2: Single; z: Single);
+    procedure rectangXY(x1, y1: Single; x2, y2: Single; z: Single);
+    procedure rectangXYr(x1, y1: Single; x2, y2: Single; z: Single);
     procedure poligono3(x1, y1, z1: Single; x2, y2, z2: Single; x3, y3,
       z3: Single; x4: Single=-10000; y4: Single=-10000; z4: Single=-10000;
       x5: Single=-10000; y5: Single=-10000; z5: Single=-10000; x6: Single=-
@@ -141,7 +141,6 @@ begin
 //              (yv) * zoom + y_des
 //            ));
   y2c := ((yv - y_cam) * cosa + (xv - x_cam) * sena) * cosi + zv * seni;
-//  Ypant := Round(y_des + y2c * Zoom);  //Con el eje creciendo hacia abajo
   Ypant := Round(gControl.Height - (y_des + y2c * Zoom));
 end;
 procedure TMotGraf.XYpant(xv, yv, zv: Single; var xp, yp: Integer);
@@ -204,13 +203,15 @@ begin
 end;
 procedure TMotGraf.ObtenerDesplaz2(xp, yp: Integer; Xant, Yant: Integer;
   var dx, dy: Single);
-//Obtiene los desplazamientos dx, dy para los objetos gráficos en base a
-//los movimientos del ratón. Sólo desplaza en 2D
+{Obtiene los desplazamientos dx, dy para los objetos gráficos en base a
+los movimientos del ratón.
+Esta es otra de las funciones importantes, que se usa para el control de la
+pantalla, con el movimiento del ratón.}
 var
   dx0, dy0: Single;
 begin
-     //desplazamiento en plano XY en caso alfa=0, fi=0
-   dx0 := (xp - xAnt) / Zoom;
+   //Desplazamiento en plano XY  (z=0)
+   dx0 := (xp - xAnt) / Zoom;   //notar que no se toman en cuenta las constantes
    dy0 := -(yp - yAnt) / Zoom;
    dx := (dx0 * cosa * cosi + sena * dy0) / cosi;
    dy := (cosa * dy0 - dx0 * sena * cosi) / cosi;
@@ -251,17 +252,16 @@ end;
 //Funciones de dibujo
 procedure TMotGraf.Line(const x1, y1, z1, x2, y2, z2: Double);
 begin
-//  cv.Line(XPant(x1+0.7*y1), YPant(z1+0.7*y1-0.5*x1),
-//          XPant(x2+0.7*y2), YPant(z2+0.7*y2-0.5*x2));
   cv.Line(XPant(x1, y1, z1), YPant(x1, y1, z1),
           XPant(x2, y2, z2), YPant(x2, y2, z2));
 end;
-procedure TMotGraf.rectangXY3(x1, y1: Single; x2, y2: Single; z: Single);
+procedure TMotGraf.rectangXY(x1, y1: Single; x2, y2: Single; z: Single);
 //Dibuja un rectángulo, paralelo al plano XY
 begin
- polilinea3(x1, y1, z, x2, y1, z, x2, y2, z, x1, y2, z);
+  //Se pasa un punto más a la polilínea.
+ polilinea3(x1, y1, z, x2, y1, z, x2, y2, z, x1, y2, z, x1, y1, z);
 End;
-procedure TMotGraf.rectangXY3r(x1, y1: Single; x2, y2: Single; z: Single);
+procedure TMotGraf.rectangXYr(x1, y1: Single; x2, y2: Single; z: Single);
 //Dibuja un rectángulo relleno, paralelo al plano XY
 begin
  poligono3(x1, y1, z, x2, y1, z, x2, y2, z, x1, y2, z);
