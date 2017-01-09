@@ -1,4 +1,4 @@
-MotGraf 0.1
+MotGraf 0.2
 ===========
 
 Librería en Lazarus, para el dibujo de objetos en 2 y 3 dimensiones.
