@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="4">
+      <Unit0>
+        <Filename Value="Project1.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="Unit1.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="20" Y="15"/>
+        <UsageCount Value="20"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="70"/>
+        <CursorPos X="3" Y="44"/>
+        <FoldState Value=" TL00Bb"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\MotGraf3d.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="67"/>
+        <CursorPos X="17" Y="21"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+    </Units>
+    <JumpHistory Count="9" HistoryIndex="8">
+      <Position1>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="103" Column="49" TopLine="86"/>
+      </Position1>
+      <Position2>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="40" TopLine="20"/>
+      </Position2>
+      <Position3>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="4"/>
+      </Position3>
+      <Position4>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="2" Column="30"/>
+      </Position4>
+      <Position5>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="16" Column="5"/>
+      </Position5>
+      <Position6>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="4" Column="68"/>
+      </Position6>
+      <Position7>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="83" TopLine="62"/>
+      </Position7>
+      <Position8>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="43" Column="15" TopLine="13"/>
+      </Position8>
+      <Position9>
+        <Filename Value="..\MotGraf2d.pas"/>
+        <Caret Line="42" Column="48" TopLine="27"/>
+      </Position9>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>
