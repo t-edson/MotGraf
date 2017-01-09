@@ -25,3 +25,5 @@ begin
   mot.Line(0,0,0, 100,100, 0);
 end;
 ```
+
+Esta librería aún está en fase de desarrollo. La versión 3D, está más avanzada que la 2D.

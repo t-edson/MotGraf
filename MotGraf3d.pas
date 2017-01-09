@@ -1,6 +1,19 @@
 {Define un objeto "Motor gráfico", que permite dibujar en un lienzo virtual,
 de coordenadas de tipo Single, que luego se transformarán a coordenadas de la
 pantalla (en pixeles).
+El sistema de coordenadas, sigue la dirección usual en geometría:
+
+Y  /|\
+    |
+    |
+    |
+    |
+    +--------------------> X
+
+Con la salvedad de que existe la coordenada Z que se levanta perpendicular al plano XY,
+en la línea de vista.
+Cambiando los ángulos ALfa y Fi, es posible obtener una vista de perspectiva o
+proyeccción parecida a la isométrica.
 }
 unit MotGraf3d;
 {$mode objfpc}{$H+}
