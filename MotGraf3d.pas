@@ -36,7 +36,6 @@ type
     sena, cosa: Single;   //sen(Alfa) y cos(Alfa)
     seni, cosi: Single;   //sen(Fi) y cos(Fi)
     gControl: TGraphicControl;   //Control gráfico, en donde se va a dibujar
-    cv      : Tcanvas;           //referencia al lienzo
     function GetPenColor: TColor;
     procedure SetPenColor(AValue: TColor);
     procedure SetAlfa(AValue: Single);
@@ -45,6 +44,7 @@ type
   public  //Parámetros de la cámara (perspectiva)
     x_cam   : Single;  //coordenadas de la camara
     y_cam   : Single;
+    cv      : Tcanvas;    //referencia al lienzo (Debería ser privado)
     {Desplazamiento para ubicar el centro virtual de la pantalla (0,0)
     Se indica en pixeles. Si por ejemplo, se fija:
     x_Des = 10 y y_Des = 10
